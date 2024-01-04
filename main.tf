@@ -46,7 +46,7 @@ resource "aws_lambda_function" "remediation_function" {
 
 # AWS Config Rule to Detect the Issue
 resource "aws_config_config_rule" "detect_open_ssh" {
-  name        = "detect-open-ssh"
+  name        = "restricted-ssh"
   description = "Checks for unrestricted SSH access."
 
   source {
@@ -54,10 +54,8 @@ resource "aws_config_config_rule" "detect_open_ssh" {
     source_identifier = "INCOMING_SSH_DISABLED"
   }
 
-  input_parameters = jsonencode({
-    port       = "22",
-    ipProtocol = "tcp"
-  })
+  # Since the INCOMING_SSH_DISABLED rule does not require parameters,
+  # the input_parameters block is removed.
 
   scope {
     compliance_resource_types = ["AWS::EC2::SecurityGroup"]
@@ -66,21 +64,27 @@ resource "aws_config_config_rule" "detect_open_ssh" {
   depends_on = [aws_lambda_function.remediation_function]
 }
 
-# AWS Config Remediation Action
+resource "aws_ssm_document" "remediation_document" {
+  name          = "SecurityGroupRemediationDocument"
+  document_type = "Automation"
+  content       = templatefile("ssm_document.tpl", { lambda_function_name = aws_lambda_function.remediation_function.function_name })
+}
+
+
 resource "aws_config_remediation_configuration" "remediate_open_ssh" {
   config_rule_name = aws_config_config_rule.detect_open_ssh.name
 
-  target_id   = aws_lambda_function.remediation_function.arn
+  target_id   = aws_ssm_document.remediation_document.id
   target_type = "SSM_DOCUMENT"
 
-  # Parameters for the Lambda function
   parameter {
-    name         = "ExecutionRoleName"
-    static_value = aws_iam_role.lambda_role.name
+    name         = "AutomationAssumeRole"
+    static_value = aws_iam_role.lambda_role.arn
   }
 
   depends_on = [aws_config_config_rule.detect_open_ssh]
 }
+
 
 # Outputs
 output "lambda_function_name" {
