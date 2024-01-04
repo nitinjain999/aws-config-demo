@@ -53,10 +53,6 @@ resource "aws_config_config_rule" "detect_open_ssh" {
     owner             = "AWS"
     source_identifier = "INCOMING_SSH_DISABLED"
   }
-
-  # Since the INCOMING_SSH_DISABLED rule does not require parameters,
-  # the input_parameters block is removed.
-
   scope {
     compliance_resource_types = ["AWS::EC2::SecurityGroup"]
   }
@@ -67,9 +63,22 @@ resource "aws_config_config_rule" "detect_open_ssh" {
 resource "aws_ssm_document" "remediation_document" {
   name          = "SecurityGroupRemediationDocument"
   document_type = "Automation"
-  content       = templatefile("ssm_document.tpl", { lambda_function_name = aws_lambda_function.remediation_function.function_name })
-}
 
+  content = jsonencode({
+    schemaVersion = "0.3"
+    description   = "Invoke Lambda function to remediate security group configuration"
+    mainSteps = [
+      {
+        action = "aws:invokeLambdaFunction"
+        name   = "invokeLambda"
+        inputs = {
+          FunctionName = aws_lambda_function.remediation_function.function_name
+          Payload      = "{}"
+        }
+      }
+    ]
+  })
+}
 
 resource "aws_config_remediation_configuration" "remediate_open_ssh" {
   config_rule_name = aws_config_config_rule.detect_open_ssh.name
@@ -84,7 +93,6 @@ resource "aws_config_remediation_configuration" "remediate_open_ssh" {
 
   depends_on = [aws_config_config_rule.detect_open_ssh]
 }
-
 
 # Outputs
 output "lambda_function_name" {
