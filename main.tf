@@ -29,9 +29,13 @@ resource "aws_iam_role_policy" "lambda_policy" {
 
 data "aws_iam_policy_document" "lambda_policy" {
   statement {
-    actions   = ["ec2:RevokeSecurityGroupIngress"]
+    actions   = ["ec2:RevokeSecurityGroupIngress", "ec2:DescribeSecurityGroupRules"]
     resources = ["*"]
   }
+}
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 # Lambda Function for Remediation
