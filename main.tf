@@ -74,12 +74,9 @@ resource "aws_config_remediation_configuration" "remediate_open_ssh" {
   target_type = "SSM_DOCUMENT"
 
   # Parameters for the Lambda function
-  # Adjust these as per your Lambda function's requirements
   parameter {
-    name = "ExecutionRoleName"
-    static_value = {
-      values = [aws_iam_role.lambda_role.name]
-    }
+    name         = "ExecutionRoleName"
+    static_value = aws_iam_role.lambda_role.name
   }
 
   depends_on = [aws_config_config_rule.detect_open_ssh]
