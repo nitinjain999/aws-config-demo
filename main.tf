@@ -51,7 +51,7 @@ resource "aws_config_config_rule" "detect_open_ssh" {
 
   source {
     owner             = "AWS"
-    source_identifier = "EC2_SECURITY_GROUP_ALLOWED_INGRESS"
+    source_identifier = "INCOMING_SSH_DISABLED"
   }
 
   input_parameters = jsonencode({
