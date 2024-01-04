@@ -55,7 +55,7 @@ resource "aws_config_config_rule" "detect_open_ssh" {
   }
 
   input_parameters = jsonencode({
-    port = "22",
+    port       = "22",
     ipProtocol = "tcp"
   })
 
@@ -76,7 +76,7 @@ resource "aws_config_remediation_configuration" "remediate_open_ssh" {
   # Parameters for the Lambda function
   # Adjust these as per your Lambda function's requirements
   parameter {
-    name         = "ExecutionRoleName"
+    name = "ExecutionRoleName"
     static_value = {
       values = [aws_iam_role.lambda_role.name]
     }
