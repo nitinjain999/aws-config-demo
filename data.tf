@@ -18,6 +18,9 @@ def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
 
     try:
+        # Add debugging code here to log the entire event payload
+        logger.info(f"Event payload: {json.dumps(event)}")
+
         # Update this part to extract the security group ID based on your event structure
         security_group_id = None
         if 'detail' in event:
@@ -81,7 +84,6 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps(error_message)
         }
-
 EOF
   }
 }
