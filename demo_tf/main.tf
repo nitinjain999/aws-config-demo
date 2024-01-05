@@ -17,7 +17,7 @@ variable "sns_topic_name" {
 variable "sns_topic_subscription" {
   description = "Provide email ID for subscription."
   type        = string
-  default     = "nitin.jain@atg.se"
+  default     = "nitin.solna@gmail.com"
 }
 
 # Create an SNS topic
